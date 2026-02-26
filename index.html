@@ -3,298 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>K-Visa Quest</title>
+    <title>K-Visa Quest: Pro Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    
     <style>
-        /* 🌌 게임 애니메이션 배경 */
-        body { 
-            font-family: 'Jua', sans-serif; 
-            margin: 0; padding: 20px; 
-            display: flex; justify-content: center; align-items: center; min-height: 100vh;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            background-size: 200% 200%;
-            animation: gradientBG 10s ease infinite;
-        }
+        /* [이전 스타일 유지 및 강화] */
+        body { font-family: 'Jua', sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); background-size: 200% 200%; animation: gradientBG 10s ease infinite; }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .app-container { background-color: #ffffff; width: 100%; max-width: 550px; padding: 35px; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; }
+        h2 { text-align: center; color: #1e272e; font-size: 26px; margin-bottom: 20px; }
+        
+        /* ✈️ 0% 리얼 스타트 진행 바 */
+        .progress-container { width: 100%; background-color: #d2dae2; border-radius: 20px; margin-bottom: 30px; height: 14px; position: relative; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%); width: 0%; border-radius: 20px; transition: width 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
+        .progress-bar::after { content: '✈️'; position: absolute; right: -15px; top: -14px; font-size: 28px; }
 
-        /* 📱 메인 앱 컨테이너 */
-        .app-container { 
-            background-color: #ffffff; width: 100%; max-width: 500px; 
-            padding: 30px; border-radius: 25px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 0 5px #f0f0f0; 
-            position: relative; overflow: hidden; 
-        }
-        
-        h2 { text-align: center; color: #1e272e; font-size: 28px; margin-top: 0; letter-spacing: 1px; }
-        
-        /* 🟢 게임 진행 바 (0부터 시작, 비행기 아이콘 추가) */
-        .progress-container { width: 100%; background-color: #d2dae2; border-radius: 15px; margin-bottom: 25px; height: 18px; box-shadow: inset 0 3px 5px rgba(0,0,0,0.1); }
-        .progress-bar { 
-            height: 100%; background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%); 
-            width: 0%; border-radius: 15px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
-            position: relative; 
-        }
-        /* 진행 바 끝에 달린 비행기 */
-        .progress-bar::after { 
-            content: '✈️'; position: absolute; right: -15px; top: -12px; font-size: 28px; 
-            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
-        }
-
-        /* 🕹️ 3D 아케이드 버튼 스타일 */
-        .btn { 
-            width: 100%; padding: 18px; border: none; font-size: 20px; font-family: 'Jua', sans-serif; cursor: pointer; border-radius: 15px; margin-top: 15px; 
-            transition: all 0.1s; position: relative; top: 0; 
-        }
-        .btn:active { top: 6px; box-shadow: none !important; }
-        
+        /* [버튼 및 질문박스 스타일] */
+        .question-box { font-size: 22px; color: #2c3e50; min-height: 110px; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; text-align: center; background: #f8efba; border-radius: 20px; padding: 20px; border: 3px solid #e1b12c; animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
+        .btn-group { display: flex; gap: 15px; }
+        .ox-btn { flex: 1; padding: 25px 0; font-size: 30px; font-family: 'Jua', sans-serif; border: none; border-radius: 15px; cursor: pointer; transition: 0.1s; position: relative; }
+        .ox-btn:active { top: 6px; box-shadow: none !important; }
+        .btn-o { background-color: #c7ecee; color: #22a6b3; box-shadow: 0 8px 0 #7ed6df; border: 2px solid #22a6b3; }
+        .btn-x { background-color: #ffcccc; color: #eb4d4b; box-shadow: 0 8px 0 #ff7979; border: 2px solid #eb4d4b; }
+        .btn { width: 100%; padding: 18px; border: none; font-size: 20px; font-family: 'Jua', sans-serif; cursor: pointer; border-radius: 15px; margin-top: 15px; position: relative; }
         .consult-btn { background-color: #05c46b; color: white; box-shadow: 0 6px 0 #038a4b; }
         .action-btn { background-color: #0fbcf9; color: white; box-shadow: 0 6px 0 #0a86b3; }
         .secondary-btn { background-color: #d2dae2; color: #485460; box-shadow: 0 6px 0 #808e9b; }
 
-        /* O/X 퀴즈 영역 */
-        .question-box { 
-            font-size: 24px; color: #2c3e50; min-height: 120px; margin-bottom: 30px; 
-            display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.4; 
-            background: #f8efba; border-radius: 20px; padding: 25px; border: 3px solid #e1b12c; 
-            box-shadow: inset 0 0 15px rgba(225, 177, 44, 0.2);
-            animation: float 3s ease-in-out infinite;
-        }
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
-
-        .btn-group { display: flex; gap: 20px; justify-content: center; margin-bottom: 10px; }
-        .ox-btn { 
-            flex: 1; padding: 30px 10px; font-size: 40px; font-family: 'Jua', sans-serif; border: none; border-radius: 20px; cursor: pointer; 
-            transition: all 0.1s; position: relative; top: 0; 
-        }
-        .ox-btn:active { top: 8px; box-shadow: none !important; }
-        .btn-o { background-color: #c7ecee; color: #22a6b3; box-shadow: 0 8px 0 #7ed6df; border: 2px solid #22a6b3; }
-        .btn-x { background-color: #ffcccc; color: #eb4d4b; box-shadow: 0 8px 0 #ff7979; border: 2px solid #eb4d4b; }
-
-        /* 결과 영역 */
-        .visa-badge { 
-            display: block; background: linear-gradient(135deg, #f0932b 0%, #ffbe76 100%); color: white; 
-            padding: 15px 25px; border-radius: 25px; font-size: 30px; margin: 20px auto; text-align: center; width: fit-content; 
-            box-shadow: 0 6px 15px rgba(240, 147, 43, 0.4); animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-        }
-        .desc { font-size: 18px; color: #3d3d3d; line-height: 1.6; margin-bottom: 25px; background: #f1f2f6; padding: 20px; border-radius: 15px; border-left: 5px solid #ffa502; }
-
-        /* 계산기 폼 */
-        .form-group { margin-bottom: 18px; text-align: left; }
-        label { font-size: 16px; color: #2f3640; margin-bottom: 8px; display: block; }
-        select, input { 
-            width: 100%; padding: 15px; font-size: 16px; font-family: 'Jua', sans-serif; border: 2px solid #dcdde1; 
-            border-radius: 12px; transition: border-color 0.3s; background-color: #f5f6fa;
-        }
-        select:focus, input:focus { outline: none; border-color: #0fbcf9; background-color: #ffffff; }
-        
-        .calc-result { margin-top: 20px; padding: 20px; background-color: #e1fbef; border-radius: 15px; text-align: center; border: 3px solid #20bf6b; display: none; }
-        .pass { color: #20bf6b; font-size: 1.4em; }
-        .fail { color: #eb3b5a; font-size: 1.4em; }
-
-        /* 화면 전환 효과 */
-        .screen { display: none; animation: slideUp 0.4s ease-out; }
+        /* [결과 및 계산기 스타일] */
+        .visa-badge { display: block; background: #f0932b; color: white; padding: 12px 20px; border-radius: 20px; font-size: 28px; margin: 20px auto; text-align: center; width: fit-content; }
+        .desc { font-size: 17px; color: #3d3d3d; line-height: 1.6; background: #f1f2f6; padding: 20px; border-radius: 15px; text-align: left; }
+        .screen { display: none; }
         .active-screen { display: block; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        select, input { width: 100%; padding: 14px; font-size: 16px; font-family: 'Jua', sans-serif; border-radius: 12px; border: 2px solid #dcdde1; }
+        .calc-result { margin-top: 20px; padding: 20px; background-color: #e1fbef; border-radius: 15px; text-align: center; border: 3px solid #20bf6b; display: none; }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        
-        <div id="quiz-screen" class="screen active-screen">
-            <h2>🗺️ 비자 찾기 대모험</h2>
-            <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
-            
-            <div class="question-box" id="question-text">한국에서 취업하여 돈을 벌(영리활동) 계획이 있으신가요?</div>
-            <div class="btn-group">
-                <button class="ox-btn btn-o" onclick="answerQuiz('O')">⭕ 예</button>
-                <button class="ox-btn btn-x" onclick="answerQuiz('X')">❌ 아니오</button>
-            </div>
+<div class="app-container">
+    <div id="quiz-screen" class="screen active-screen">
+        <h2>🗺️ 비자 정착 대모험 (심층 진단)</h2>
+        <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
+        <div class="question-box" id="question-text">퀘스트를 시작합니다!</div>
+        <div class="btn-group">
+            <button class="ox-btn btn-o" onclick="answerQuiz('O')">⭕ 예</button>
+            <button class="ox-btn btn-x" onclick="answerQuiz('X')">❌ 아니오</button>
         </div>
-
-        <div id="result-screen" class="screen">
-            <h2>🎉 퀘스트 완료!</h2>
-            <div class="visa-badge" id="visa-name">결과</div>
-            <div class="desc" id="visa-desc">설명</div>
-            
-            <button id="go-calc-btn" class="btn action-btn" style="display: none;" onclick="showScreen('calc-screen')">📊 내 F-2-7 점수 계산해보기</button>
-            <button class="btn consult-btn" onclick="openSMS()">💬 김동현 행정사와 문자로 바로 상담</button>
-            <button class="btn secondary-btn" onclick="startQuiz()">🔄 게임 다시 시작하기</button>
-        </div>
-
-        <div id="calc-screen" class="screen">
-            <h2>🏆 F-2-7 우수인재 챌린지</h2>
-            <p style="text-align:center; color:#7f8c8d; font-size:16px; margin-bottom: 20px;">80점을 넘으면 미션 성공입니다!</p>
-            
-            <div class="form-group">
-                <label>1. 연령 (신청일 기준)</label>
-                <select id="age">
-                    <option value="0">선택하세요</option>
-                    <option value="25">25세 ~ 34세 (25점)</option>
-                    <option value="23">18~24세, 35~39세 (23점)</option>
-                    <option value="20">40세 ~ 44세 (20점)</option>
-                    <option value="15">45세 ~ 50세 (15점)</option>
-                    <option value="3">51세 이상 (3점)</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>2. 학력</label>
-                <select id="edu">
-                    <option value="0">선택하세요</option>
-                    <option value="25">박사 학위 (25점)</option>
-                    <option value="20">석사 학위 (20점)</option>
-                    <option value="15">학사 학위 (15점)</option>
-                    <option value="10">전문학사 학위 (10점)</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>3. 한국어 능력 (자동으로 높은 점수 반영)</label>
-                <select id="topik" style="margin-bottom: 8px;">
-                    <option value="0">TOPIK 급수 선택</option>
-                    <option value="20">TOPIK 5급 이상 (20점)</option>
-                    <option value="15">TOPIK 4급 (15점)</option>
-                    <option value="10">TOPIK 3급 (10점)</option>
-                    <option value="5">TOPIK 2급 (5점)</option>
-                </select>
-                <select id="kiip">
-                    <option value="0">사회통합프로그램(KIIP) 단계</option>
-                    <option value="20">5단계 이수 (20점)</option>
-                    <option value="15">4단계 이수 (15점)</option>
-                    <option value="10">3단계 이수 (10점)</option>
-                    <option value="5">2단계 이수 (5점)</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>4. 연간 소득 (원 단위 숫자만)</label>
-                <input type="number" id="income" placeholder="예: 45000000">
-            </div>
-
-            <button class="btn action-btn" onclick="calculateScore()">🎯 내 점수 결과 뽑기</button>
-
-            <div class="calc-result" id="calc-result-box">
-                <h3 style="margin-top: 0; color: #2c3e50; font-size: 26px;">총점: <span id="total-score" style="color: #20bf6b;">0</span> 점</h3>
-                <p id="calc-message"></p>
-            </div>
-
-            <button class="btn consult-btn" onclick="openSMS()">💬 점수 결과로 문자 상담하기</button>
-            <button class="btn secondary-btn" onclick="showScreen('result-screen')">🔙 추천 결과로 돌아가기</button>
-        </div>
-
     </div>
 
-    <script>
-        // --- 화면 전환 로직 ---
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
-            document.getElementById(screenId).classList.add('active-screen');
-            window.scrollTo(0, 0);
-        }
+    <div id="result-screen" class="screen">
+        <h2>🎉 진단 완료!</h2>
+        <div class="visa-badge" id="visa-name">결과</div>
+        <div class="desc" id="visa-desc">설명</div>
+        <button id="go-calc-btn" class="btn action-btn" style="display: none;" onclick="showScreen('calc-screen')">📊 내 F-2-7 점수 계산해보기</button>
+        <button class="btn consult-btn" onclick="openSMS()">💬 김동현 행정사와 문자 상담</button>
+        <button class="btn secondary-btn" onclick="startQuiz()">🔄 다시 시작하기</button>
+    </div>
 
-        function openSMS() {
-            const phoneNumber = "010-8843-0566";
-            const message = "안녕하세요, 비자 퀘스트 웹사이트를 통해 상담 문의드립니다. 제게 맞는 비자와 절차를 안내받고 싶습니다.";
-            window.location.href = `sms:${phoneNumber}?body=${encodeURIComponent(message)}`;
-        }
+    <div id="calc-screen" class="screen">
+        <h2>🏆 F-2-7 점수 챌린지</h2>
+        <div class="form-group"><label>1. 연령</label><select id="age"><option value="0">선택</option><option value="25">25~34세(25)</option><option value="23">18~24, 35~39(23)</option><option value="20">40~44(20)</option><option value="3">51세~(3)</option></select></div>
+        <div class="form-group"><label>2. 학력</label><select id="edu"><option value="0">선택</option><option value="25">박사(25)</option><option value="20">석사(20)</option><option value="15">학사(15)</option></select></div>
+        <div class="form-group"><label>3. 한국어 능력</label><select id="topik"><option value="0">TOPIK 선택</option><option value="20">5급↑(20)</option><option value="15">4급(15)</option><option value="10">3급(10)</option></select></div>
+        <div class="form-group"><label>4. 연소득(원)</label><input type="number" id="income" placeholder="예: 45000000"></div>
+        <button class="btn action-btn" onclick="calculateScore()">🎯 결과 보기</button>
+        <div class="calc-result" id="calc-result-box"><h3>총점: <span id="total-score">0</span>점</h3><p id="calc-message"></p></div>
+        <button class="btn consult-btn" onclick="openSMS()">💬 결과로 문자 상담</button>
+        <button class="btn secondary-btn" onclick="showScreen('result-screen')">🔙 돌아가기</button>
+    </div>
+</div>
 
-        // 폭죽 터트리기 함수 (성공/완료 시)
-        function shootConfetti() {
-            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#ffbe76', '#ff7979', '#badc58', '#22a6b3'] });
-        }
+<script>
+    const logicTree = {
+        start: { text: "과거에 한국 국적을 가졌었거나, 부모님/조부모님 중 한국 국적자가 있나요?", O: "res_f4", X: "q_long_stay" },
+        q_long_stay: { text: "이미 한국에 5년 이상 거주하셨고, 앞으로 평생 살 계획인가요?", O: "res_f5", X: "q_work" },
+        q_work: { text: "한국에서 일을 해서 돈을 벌 계획이신가요?", O: "q_expert", X: "q_marry" },
+        q_expert: { text: "전문직(학사 이상/고숙련 기술) 종사자이신가요?", O: "q_high_income", X: "res_e9" },
+        q_high_income: { text: "연봉이 한국 평균(GNI)보다 높거나 점수가 80점 이상일까요?", O: "res_f27", X: "res_e7" },
+        q_marry: { text: "한국인과 결혼하셨거나 곧 결혼할 예정인가요?", O: "res_f6", X: "q_invest" },
+        q_invest: { text: "한국에 1억 원 이상의 사업 자금을 투자하실 수 있나요?", O: "res_d89", X: "q_study" },
+        q_study: { text: "정규 대학/대학원에서 공부를 하고 싶으신가요?", O: "res_d2", X: "res_etc" }
+    };
 
-        // --- 퀴즈 로직 ---
-        const logicTree = {
-            q1: { text: "🏢 한국에서 취업하여 돈을 벌(영리활동) 계획이 있으신가요?", O: "q_work_expert", X: "q_marry", progress: 20 },
-            q_work_expert: { text: "🎓 학사 이상의 학위가 있거나, 종사하려는 분야에 5년 이상의 경력이 있습니까?", O: "res_e7", X: "res_e9", progress: 50 },
-            q_marry: { text: "💍 한국인 배우자와 혼인 신고를 하셨거나, 곧 하실 예정인가요?", O: "res_f6", X: "q_study", progress: 50 },
-            q_study: { text: "📚 한국의 대학교나 대학원에서 정규 과정을 밟을 예정인가요?", O: "res_d2", X: "res_etc", progress: 80 }
-        };
+    const results = {
+        res_f4: { name: "F-4 (재외동포)", desc: "동포분들을 위한 가장 자유로운 비자입니다. 거주 및 취업 활동에 제약이 거의 없습니다.", showCalc: false },
+        res_f5: { name: "F-5 (영주권)", desc: "한국에 영구히 거주할 수 있는 비자입니다. 엄격한 소득과 품행 요건이 필요하므로 전문가 상담이 필수입니다.", showCalc: false },
+        res_f27: { name: "F-2-7 (거주)", desc: "우수인재를 위한 점수제 비자입니다. 자유로운 이직과 체류가 가능합니다. 지금 점수를 확인해 보세요!", showCalc: true },
+        res_e7: { name: "E-7 (특정활동)", desc: "전문 인력을 위한 취업 비자입니다. 고용 계약과 학위 등 복잡한 서류 입증이 필요합니다.", showCalc: false },
+        res_e9: { name: "E-9 (비전문취업)", desc: "고용허가제를 통한 취업 비자입니다. 지정된 업종에서만 근무가 가능합니다.", showCalc: false },
+        res_f6: { name: "F-6 (결혼이민)", desc: "한국인 배우자와 정착하기 위한 비자입니다. 혼인의 진정성 입증이 가장 중요합니다.", showCalc: false },
+        res_d89: { name: "D-8 / D-9 (투자/무역)", desc: "기업 투자나 무역 경영을 위한 비자입니다. 자금 출처와 사업 실적 증빙이 핵심입니다.", showCalc: false },
+        res_d2: { name: "D-2 / D-4 (유학/연수)", desc: "공부를 위한 비자입니다. 졸업 후 취업 비자로 연결하는 전략이 필요합니다.", showCalc: false },
+        res_etc: { name: "상세 상담 필요", desc: "고객님의 상황은 매우 특수합니다. 행정사님과 직접 상담하여 맞춤 비자를 찾아보세요.", showCalc: false }
+    };
 
-        const results = {
-            res_e7: { name: "E-7 / F-2-7 (우수인재)", desc: "✨ 뛰어난 전문성을 갖춘 인재시군요!<br><br>일정 요건을 갖추면 <b>F-2-7 거주 비자</b>로 바로 전환할 수 있는 가장 유리한 루트입니다.", showCalc: true },
-            res_e9: { name: "E-9 (비전문취업) 등", desc: "제조업, 농업 등에서 일할 수 있는 취업 비자가 적합합니다. 고용허가제 등 복잡한 절차가 필요합니다.", showCalc: false },
-            res_f6: { name: "F-6 (결혼이민)", desc: "한국인 배우자와 함께 정착하기 위한 비자입니다.<br><br>소득, 주거, 의사소통 등 입증 서류가 까다로운 편입니다.", showCalc: false },
-            res_d2: { name: "D-2 (유학) / D-4 (일반연수)", desc: "학업을 위한 비자입니다. 졸업 후 구직 비자(D-10)를 거쳐 취업 비자로 전환하는 전략이 필요합니다.", showCalc: false },
-            res_etc: { name: "맞춤형 심층 상담 필요", desc: "상황에 맞는 다양한 비자가 존재합니다. 행정사와의 1:1 상담을 통해 가장 빠르고 안전한 길을 찾아보세요.", showCalc: false }
-        };
+    let currentStep = "start";
+    let stepCount = 0;
+    const maxSteps = 5; // 질문 단계 수 (유동적이나 바 진행을 위해 설정)
 
-        let currentStep = "q1";
+    function startQuiz() {
+        currentStep = "start";
+        stepCount = 0;
+        const bar = document.getElementById('progress-bar');
+        bar.style.width = '0%'; // 0% 리얼 스타트
+        document.getElementById('question-text').innerText = logicTree[currentStep].text;
+        showScreen('quiz-screen');
+    }
 
-        function startQuiz() {
-            currentStep = "q1";
+    function answerQuiz(choice) {
+        const nextStep = logicTree[currentStep][choice];
+        stepCount++;
+        
+        // 바 진행도 계산 (0%에서 시작해 질문마다 늘어남)
+        let progress = Math.min((stepCount / maxSteps) * 100, 90);
+        document.getElementById('progress-bar').style.width = progress + '%';
+
+        if (nextStep.startsWith("res_")) {
+            document.getElementById('progress-bar').style.width = '100%';
+            setTimeout(() => {
+                showQuizResult(nextStep);
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            }, 600);
+        } else {
+            currentStep = nextStep;
             document.getElementById('question-text').innerText = logicTree[currentStep].text;
-            
-            // 핵심: 0%로 초기화 후 약간의 지연 뒤에 1번 질문 진행도로 부드럽게 채움
-            const bar = document.getElementById('progress-bar');
-            bar.style.width = '0%';
-            setTimeout(() => { bar.style.width = logicTree[currentStep].progress + '%'; }, 100);
-            
-            showScreen('quiz-screen');
         }
+    }
 
-        function answerQuiz(choice) {
-            const nextStep = logicTree[currentStep][choice];
-            if (nextStep.startsWith("res_")) {
-                document.getElementById('progress-bar').style.width = '100%';
-                setTimeout(() => {
-                    showQuizResult(nextStep);
-                    shootConfetti(); // 결과 화면 넘어갈 때 폭죽 펑!
-                }, 400); 
-            } else {
-                currentStep = nextStep;
-                document.getElementById('question-text').innerText = logicTree[currentStep].text;
-                document.getElementById('progress-bar').style.width = logicTree[currentStep].progress + '%';
-            }
-        }
+    function showQuizResult(resKey) {
+        const resData = results[resKey];
+        document.getElementById('visa-name').innerText = resData.name;
+        document.getElementById('visa-desc').innerHTML = resData.desc;
+        document.getElementById('go-calc-btn').style.display = resData.showCalc ? "block" : "none";
+        showScreen('result-screen');
+    }
 
-        function showQuizResult(resKey) {
-            const resData = results[resKey];
-            document.getElementById('visa-name').innerHTML = resData.name;
-            document.getElementById('visa-desc').innerHTML = resData.desc;
-            
-            document.getElementById('go-calc-btn').style.display = resData.showCalc ? "block" : "none";
-            showScreen('result-screen');
-        }
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
+        document.getElementById(screenId).classList.add('active-screen');
+    }
 
-        // --- 계산기 로직 ---
-        function calculateScore() {
-            const ageScore = parseInt(document.getElementById('age').value) || 0;
-            const eduScore = parseInt(document.getElementById('edu').value) || 0;
-            const topikScore = parseInt(document.getElementById('topik').value) || 0;
-            const kiipScore = parseInt(document.getElementById('kiip').value) || 0;
-            const koreanScore = Math.max(topikScore, kiipScore);
+    function openSMS() {
+        window.location.href = `sms:010-8843-0566?body=${encodeURIComponent("비자 퀘스트 진단 결과 상담 요청드립니다.")}`;
+    }
 
-            const incomeInput = parseInt(document.getElementById('income').value) || 0;
-            const GNI = 44000000; 
-            let incomeScore = 0;
+    function calculateScore() {
+        const score = (parseInt(document.getElementById('age').value)||0) + (parseInt(document.getElementById('edu').value)||0) + (parseInt(document.getElementById('topik').value)||0);
+        const income = parseInt(document.getElementById('income').value)||0;
+        const total = score + (income >= 44000000 ? 30 : 10);
+        document.getElementById('calc-result-box').style.display = 'block';
+        document.getElementById('total-score').innerText = total;
+        document.getElementById('calc-message').innerText = total >= 80 ? "🎉 성공! 우수인재 요건에 근접합니다." : "앗! 조금 더 점수가 필요해요.";
+        if(total >= 80) confetti({ particleCount: 100, spread: 50 });
+    }
 
-            if (incomeInput >= GNI * 3) { incomeScore = 60; } 
-            else if (incomeInput >= GNI * 2) { incomeScore = 50; } 
-            else if (incomeInput >= GNI * 1.5) { incomeScore = 40; } 
-            else if (incomeInput >= GNI * 1) { incomeScore = 30; } 
-            else { incomeScore = 10; }
-
-            const totalScore = ageScore + eduScore + koreanScore + incomeScore;
-
-            const resultBox = document.getElementById('calc-result-box');
-            resultBox.style.display = 'block';
-
-            document.getElementById('total-score').innerText = totalScore;
-
-            const messageDisplay = document.getElementById('calc-message');
-            if (totalScore >= 80) {
-                messageDisplay.innerHTML = '<span class="pass">🎉 미션 클리어! 80점을 넘었습니다.</span><br><br><span style="font-size:16px; color:#555;">전문가와 함께 완벽한 서류를 준비해 보세요!</span>';
-                shootConfetti(); // 합격 점수일 때도 폭죽 펑!
-            } else {
-                messageDisplay.innerHTML = `<span class="fail">앗, ${80 - totalScore}점이 부족하네요.</span><br><br><span style="font-size:16px; color:#555;">숨겨진 가점을 찾거나 전략을 수정하기 위해 상담을 받아보세요.</span>`;
-            }
-        }
-
-        // 최초 실행
-        startQuiz();
-    </script>
-
+    startQuiz();
+</script>
 </body>
 </html>
