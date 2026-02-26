@@ -3,33 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>K-Visa Quest: Global</title>
+    <title>K-Visa Quest: Global Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        /* [스타일은 이전과 동일하되 언어 선택바 추가] */
+        /* [스타일 유지] */
         body { font-family: 'Jua', sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
         .app-container { background-color: #ffffff; width: 100%; max-width: 550px; padding: 30px; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; }
-        
         .lang-selector { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
-        .lang-btn { padding: 5px 12px; border-radius: 15px; border: 2px solid #3498db; background: white; cursor: pointer; font-family: 'Jua'; font-size: 14px; }
+        .lang-btn { padding: 8px 15px; border-radius: 20px; border: 2px solid #3498db; background: white; cursor: pointer; font-family: 'Jua'; transition: 0.3s; }
         .lang-btn.active { background: #3498db; color: white; }
-
         .progress-container { width: 100%; background: #eee; height: 12px; border-radius: 10px; margin-bottom: 25px; position: relative; }
         .progress-bar { height: 100%; background: linear-gradient(90deg, #00d2ff, #3a7bd5); width: 0%; border-radius: 10px; transition: 0.5s; position: relative; }
         .progress-bar::after { content: '✈️'; position: absolute; right: -15px; top: -12px; font-size: 24px; }
-        .question-box { background: #fef9e7; padding: 20px; border-radius: 20px; min-height: 100px; display: flex; align-items: center; justify-content: center; border: 3px solid #f1c40f; font-size: 20px; margin-bottom: 20px; }
-        .btn-group { display: flex; gap: 10px; }
-        .ox-btn { flex: 1; padding: 20px; font-size: 28px; border-radius: 15px; border: none; cursor: pointer; font-family: 'Jua'; }
-        
-        /* AI 채팅창 */
-        .ai-section { margin-top: 20px; border: 2px solid #3498db; border-radius: 15px; background: #f0f9ff; overflow: hidden; }
-        #chat-window { height: 120px; overflow-y: auto; padding: 10px; background: white; text-align: left; font-size: 14px; }
-        .chat-input-group { display: flex; padding: 8px; background: white; gap: 5px; }
-        input#user-input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 5px; font-family: 'Jua'; }
-        
-        .screen { display: none; }
+        .question-box { background: #fef9e7; padding: 20px; border-radius: 20px; min-height: 100px; display: flex; align-items: center; justify-content: center; border: 3px solid #f1c40f; font-size: 20px; margin-bottom: 20px; line-height: 1.4; }
+        .btn-group { display: flex; gap: 15px; }
+        .ox-btn { flex: 1; padding: 20px; font-size: 28px; border-radius: 15px; border: none; cursor: pointer; font-family: 'Jua'; transition: 0.1s; position: relative; }
+        .ox-btn:active { top: 5px; }
+        .screen { display: none; animation: fadeIn 0.5s; }
         .active-screen { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* AI 채팅 */
+        .ai-section { margin-top: 25px; border: 2px solid #3498db; border-radius: 15px; background: #f0f9ff; overflow: hidden; }
+        #chat-window { height: 150px; overflow-y: auto; padding: 15px; background: white; text-align: left; font-size: 14px; border-bottom: 1px solid #ddd; }
+        .chat-input-group { display: flex; padding: 10px; background: white; gap: 5px; }
+        input#user-input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Jua'; }
     </style>
 </head>
 <body>
@@ -45,38 +43,40 @@
     <div id="quiz-screen" class="screen active-screen">
         <h2 id="title-text">🗺️ 비자 찾기 퀘스트</h2>
         <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
-        <div class="question-box" id="question-text">퀘스트를 시작합니다!</div>
+        <div class="question-box" id="question-text">잠시만 기다려주세요...</div>
         <div class="btn-group">
-            <button class="ox-btn" style="background:#d4efdf; color:#27ae60;" onclick="answerQuiz('O')">⭕ <span class="yes-text">예</span></button>
-            <button class="ox-btn" style="background:#fadbd8; color:#e74c3c;" onclick="answerQuiz('X')">❌ <span class="no-text">아니오</span></button>
+            <button class="ox-btn" style="background:#d4efdf; color:#27ae60; box-shadow: 0 6px 0 #a9dfbf;" onclick="answerQuiz('O')">⭕ <span class="yes-text">예</span></button>
+            <button class="ox-btn" style="background:#fadbd8; color:#e74c3c; box-shadow: 0 6px 0 #f1948a;" onclick="answerQuiz('X')">❌ <span class="no-text">아니오</span></button>
         </div>
-
         <div class="ai-section">
-            <div id="chat-window">AI Helper: Ask me anything!</div>
+            <div id="chat-window"><div id="ai-init-msg">AI 도우미: 궁금한 점을 물어보세요!</div></div>
             <div class="chat-input-group">
                 <input type="text" id="user-input" placeholder="..." onkeypress="if(event.keyCode==13) askGemini()">
-                <button onclick="askGemini()" style="background:#3498db; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">ASK</button>
+                <button onclick="askGemini()" style="background:#3498db; color:white; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-family:'Jua';">ASK</button>
             </div>
         </div>
     </div>
 
     <div id="result-screen" class="screen">
-        <h2 id="res-title">🎉 Finish!</h2>
-        <div id="visa-name" style="font-size:24px; color:#f39c12; margin:15px 0;">RESULT</div>
-        <div id="visa-desc" style="background:#f9f9f9; padding:15px; border-radius:10px; text-align:left; margin-bottom:20px;">DESC</div>
-        <button class="btn" style="width:100%; background:#03c75a; color:white; padding:15px; border:none; border-radius:10px; cursor:pointer; font-family:'Jua';" onclick="openSMS()">💬 Consulting</button>
+        <h2 id="res-header">🎉 Finish!</h2>
+        <div id="visa-badge" style="background: #f39c12; color: white; padding: 10px 20px; border-radius: 20px; font-size: 24px; margin: 20px auto; display: inline-block;">RESULT</div>
+        <div id="visa-desc" style="background: #f9f9f9; padding: 20px; border-radius: 15px; text-align: left; line-height: 1.6; margin-bottom: 25px; border-left: 5px solid #f39c12;">DESC</div>
+        <button class="btn" style="width:100%; background:#03c75a; color:white; padding:18px; border:none; border-radius:15px; cursor:pointer; font-family:'Jua'; font-size:20px; box-shadow: 0 6px 0 #02a048;" onclick="openSMS()">💬 <span id="consult-text">Consulting</span></button>
+        <button class="btn" style="width:100%; background:#eee; padding:15px; border:none; border-radius:15px; cursor:pointer; font-family:'Jua'; margin-top:15px;" onclick="startQuiz()">🔄 <span id="retry-text">Retry</span></button>
     </div>
 </div>
 
 <script>
     const API_KEY = "AIzaSyDESvr-knS2gSz2gTDaKvMXd7dbz17aH4w";
     let userLang = 'ko';
+    let currentStep = "start";
+    let stepCount = 0;
 
     const translations = {
-        ko: { title: "🗺️ 비자 찾기 퀘스트", yes: "예", no: "아니오", ai: "AI 도우미: 궁금한 점을 물어보세요!", start: "퀘스트를 시작합니다!", sms: "비자 상담 요청드립니다." },
-        en: { title: "🗺️ Visa Find Quest", yes: "Yes", no: "No", ai: "AI Helper: Ask me anything!", start: "Start the Quest!", sms: "I would like a visa consultation." },
-        zh: { title: "🗺️ 签证查找任务", yes: "是", no: "不", ai: "AI 助手: 有什么问题尽管问!", start: "开始任务!", sms: "我想咨询签证问题。" },
-        vi: { title: "🗺️ Nhiệm vụ tìm Visa", yes: "Có", no: "Không", ai: "Trợ lý AI: Hãy hỏi tôi bất cứ điều gì!", start: "Bắt đầu nhiệm vụ!", sms: "Tôi muốn tư vấn về visa." }
+        ko: { title: "🗺️ 비자 찾기 퀘스트", yes: "예", no: "아니오", ai: "AI 도우미: 궁금한 점을 물어보세요!", sms: "비자 상담 요청드립니다.", resHeader: "🎉 진단 완료!", consult: "김동현 행정사와 문자 상담", retry: "다시 하기" },
+        en: { title: "🗺️ Visa Find Quest", yes: "Yes", no: "No", ai: "AI Helper: Ask me anything!", sms: "I would like a visa consultation.", resHeader: "🎉 Quest Finished!", consult: "Consult via SMS", retry: "Retry" },
+        zh: { title: "🗺️ 签证查找任务", yes: "是", no: "不", ai: "AI 助手: 有什么问题尽管问!", sms: "我想咨询签证问题。", resHeader: "🎉 诊断完成！", consult: "通过短信咨询", retry: "重新开始" },
+        vi: { title: "🗺️ Nhiệm vụ tìm Visa", yes: "Có", no: "Không", ai: "Trợ lý AI: Hãy hỏi tôi bất cứ điều gì!", sms: "Tôi muốn tư vấn về visa.", resHeader: "🎉 Đã hoàn thành!", consult: "Tư vấn qua SMS", retry: "Thử lại" }
     };
 
     const logicTree = {
@@ -96,6 +96,27 @@
         }
     };
 
+    const resultsData = {
+        res_f4: {
+            ko: { name: "F-4 (재외동포)", desc: "동포분들을 위한 가장 자유로운 비자입니다. 취업 활동에 제약이 거의 없습니다." },
+            en: { name: "F-4 (Overseas Korean)", desc: "The most flexible visa for ethnic Koreans. Very few restrictions on employment." },
+            zh: { name: "F-4 (在外同胞)", desc: "专为同胞设计的自由签证。就业活动几乎没有限制。" },
+            vi: { name: "F-4 (Kiều bào)", desc: "Visa tự do nhất dành cho kiều bào. Hầu như không có hạn chế về hoạt động tìm việc." }
+        },
+        res_e7: {
+            ko: { name: "E-7 (특정활동)", desc: "전문 인력을 위한 취업 비자입니다. 학위와 고용계약서 등 입증이 중요합니다." },
+            en: { name: "E-7 (Special Occupation)", desc: "Work visa for professionals. Proof of degree and employment contract is key." },
+            zh: { name: "E-7 (特定活动)", desc: "专为专业人士设计的就业签证。学位和雇佣合同的证明非常重要。" },
+            vi: { name: "E-7 (Hoạt động đặc biệt)", desc: "Visa làm việc dành cho nhân lực chuyên môn. Việc chứng minh bằng cấp và hợp đồng lao động là rất quan trọng." }
+        },
+        res_f6: {
+            ko: { name: "F-6 (결혼이민)", desc: "한국인 배우자와 정착하기 위한 비자입니다. 혼인의 진정성 입증이 필수입니다." },
+            en: { name: "F-6 (Marriage Migrant)", desc: "Visa for settling with a Korean spouse. Proof of genuine marriage is essential." },
+            zh: { name: "F-6 (结婚移民)", desc: "为了与韩国配偶定居的签证。必须证明婚姻 renew 真实性。" },
+            vi: { name: "F-6 (Kết hôn di trú)", desc: "Visa để định cư với bạn đời người Hàn Quốc. Việc chứng minh tính chân thực của hôn nhân là bắt buộc." }
+        }
+    };
+
     function changeLang(lang, btn) {
         userLang = lang;
         document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
@@ -105,50 +126,84 @@
         document.getElementById('title-text').innerText = t.title;
         document.querySelectorAll('.yes-text').forEach(el => el.innerText = t.yes);
         document.querySelectorAll('.no-text').forEach(el => el.innerText = t.no);
-        document.getElementById('chat-window').innerHTML = `<div>${t.ai}</div>`;
+        document.getElementById('ai-init-msg').innerText = t.ai;
         document.getElementById('question-text').innerText = logicTree[currentStep][lang];
+        
+        // 결과창 텍스트 업데이트 (결과창인 경우)
+        document.getElementById('res-header').innerText = t.resHeader;
+        document.getElementById('consult-text').innerText = t.consult;
+        document.getElementById('retry-text').innerText = t.retry;
     }
 
-    let currentStep = "start";
+    function startQuiz() {
+        currentStep = "start";
+        stepCount = 0;
+        document.getElementById('progress-bar').style.width = '0%';
+        document.getElementById('question-text').innerText = logicTree[currentStep][userLang];
+        showScreen('quiz-screen');
+    }
 
     function answerQuiz(choice) {
         const next = logicTree[currentStep][choice];
+        stepCount++;
+        document.getElementById('progress-bar').style.width = Math.min(stepCount * 40, 90) + '%';
+
         if (next.startsWith("res_")) {
-            // 결과 처리 로직 (생략 - 이전과 동일하게 번역 데이터 연동 가능)
-            document.getElementById('visa-name').innerText = next;
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-            document.getElementById('result-screen').classList.add('active-screen');
-            confetti();
+            document.getElementById('progress-bar').style.width = '100%';
+            setTimeout(() => showQuizResult(next), 500);
         } else {
             currentStep = next;
             document.getElementById('question-text').innerText = logicTree[currentStep][userLang];
         }
     }
 
+    function showQuizResult(resKey) {
+        const res = resultsData[resKey][userLang];
+        document.getElementById('visa-badge').innerText = res.name;
+        document.getElementById('visa-desc').innerHTML = res.desc;
+        
+        // 버튼 텍스트 재세팅
+        const t = translations[userLang];
+        document.getElementById('res-header').innerText = t.resHeader;
+        document.getElementById('consult-text').innerText = t.consult;
+        document.getElementById('retry-text').innerText = t.retry;
+
+        showScreen('result-screen');
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+    }
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+        document.getElementById(id).classList.add('active-screen');
+    }
+
     async function askGemini() {
         const input = document.getElementById('user-input');
         const win = document.getElementById('chat-window');
-        const text = input.value;
+        const text = input.value.trim();
         if(!text) return;
         
-        win.innerHTML += `<div>Me: ${text}</div>`;
+        win.innerHTML += `<div style="margin-bottom:8px;"><b>Me:</b> ${text}</div>`;
         input.value = "";
 
         try {
             const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
                 method: "POST", headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ contents: [{ parts: [{ text: `Answer in ${userLang} language. You are a visa expert assistant. Question: ${text}` }] }] })
+                body: JSON.stringify({ contents: [{ parts: [{ text: `Answer in ${userLang} language. You are a visa expert assistant. Be concise. Question: ${text}` }] }] })
             });
             const data = await resp.json();
             const aiMsg = data.candidates[0].content.parts[0].text;
-            win.innerHTML += `<div style="color:#2980b9;">AI: ${aiMsg}</div>`;
+            win.innerHTML += `<div style="color:#2980b9; margin-bottom:8px;"><b>AI:</b> ${aiMsg}</div>`;
             win.scrollTop = win.scrollHeight;
-        } catch(e) { win.innerHTML += "<div>Error!</div>"; }
+        } catch(e) { win.innerHTML += "<div>Error! Check API key.</div>"; }
     }
 
     function openSMS() {
         window.location.href = `sms:010-8843-0566?body=${encodeURIComponent(translations[userLang].sms)}`;
     }
+
+    // 초기화
+    startQuiz();
 </script>
 </body>
 </html>
