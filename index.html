@@ -32,7 +32,7 @@
             text-align: center; position: relative;
         }
 
-        /* 🌏 언어 선택 인트로 */
+        /* 🌏 언어 선택 인트로 (처음에만 노출) */
         #lang-screen { display: flex; flex-direction: column; gap: 15px; }
         .lang-card {
             padding: 25px; border-radius: 25px; background: rgba(255,255,255,0.1);
@@ -104,7 +104,7 @@
 
         <div id="ui-input" class="ui-group">
             <input type="number" id="data-field" class="ios-input" placeholder="0">
-            <button class="ios-btn btn-blue" onclick="handleInput(document.getElementById('data-field').value)">Next</button>
+            <button class="ios-btn btn-blue" id="next-btn" onclick="handleInput(document.getElementById('data-field').value)">Next</button>
         </div>
 
         <div class="ai-section">
@@ -132,10 +132,10 @@
     let stepLog = 0;
 
     const translations = {
-        ko: { yes: "예", no: "아니오", consult: "행정사님과 문자 상담", resHeader: "🎉 진단 완료!", aiInit: "비자에 대해 무엇이든 물어보세요!" },
-        en: { yes: "Yes", no: "No", consult: "Consult via SMS", resHeader: "🎉 Finished!", aiInit: "Ask me anything about Visas!" },
-        zh: { yes: "是", no: "不", consult: "通过短信咨询", resHeader: "🎉 诊断完成！", aiInit: "咨询任何签证问题" },
-        vi: { yes: "Có", no: "Không", consult: "Tư vấn qua SMS", resHeader: "🎉 Hoàn thành!", aiInit: "Hỏi tôi về visa!" }
+        ko: { yes: "예", no: "아니오", consult: "행정사님과 문자 상담", resHeader: "🎉 진단 완료!", aiInit: "비자에 대해 무엇이든 물어보세요!", next: "다음" },
+        en: { yes: "Yes", no: "No", consult: "Consult via SMS", resHeader: "🎉 Finished!", aiInit: "Ask me anything about Visas!", next: "Next" },
+        zh: { yes: "是", no: "不", consult: "通过短信咨询", resHeader: "🎉 诊断完成！", aiInit: "咨询任何签证问题", next: "下一个" },
+        vi: { yes: "Có", no: "Không", consult: "Tư vấn qua SMS", resHeader: "🎉 Hoàn thành!", aiInit: "Hỏi tôi về visa!", next: "Kế tiếp" }
     };
 
     const flows = {
@@ -187,13 +187,14 @@
 
     function initQuest(lang) {
         userLang = lang;
-        document.getElementById('lang-screen').classList.remove('active-screen');
-        document.getElementById('quiz-screen').classList.add('active-screen');
+        document.getElementById('lang-screen').style.display = 'none'; // 인트로 화면 숨김
+        document.getElementById('quiz-screen').classList.add('active-screen'); // 퀘스트 화면 활성화
         
         const t = translations[lang];
         document.querySelectorAll('.yes-txt').forEach(el => el.innerText = t.yes);
         document.querySelectorAll('.no-txt').forEach(el => el.innerText = t.no);
         document.getElementById('ai-init-msg').innerText = t.aiInit;
+        document.getElementById('next-btn').innerText = t.next; // Next 버튼 번역 적용
         renderStep();
     }
 
@@ -261,7 +262,7 @@
                 body: JSON.stringify({ contents: [{ parts: [{ text: `Answer in ${userLang}. Act as a helpful visa assistant for 'Administrative Attorney Kim Dong-hyun'. Question: ${q}` }] }] })
             });
             const data = await resp.json();
-            win.innerHTML += `<div style="color:var(--ios-blue); margin-bottom:10px;">• ${data.candidates[0].content.parts[0].text}</div>`;
+            win.innerHTML += `<div style="color:#0A84FF; margin-bottom:10px;">• ${data.candidates[0].content.parts[0].text}</div>`;
             win.scrollTop = win.scrollHeight;
         } catch(e) { win.innerHTML += "<div>Error...</div>"; }
     }
