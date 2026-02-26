@@ -8,8 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
-            --glass-bg: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-bg: rgba(255, 255, 255, 0.12);
+            --glass-border: rgba(255, 255, 255, 0.25);
             --ios-blue: #0A84FF;
             --ios-green: #30D158;
         }
@@ -29,10 +29,9 @@
             backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
             width: 100%; max-width: 480px; padding: 35px; border-radius: 45px;
             border: 1px solid var(--glass-border); box-shadow: 0 30px 60px rgba(0,0,0,0.5);
-            text-align: center; position: relative;
+            text-align: center;
         }
 
-        /* 🌏 언어 선택 인트로 (처음에만 노출) */
         #lang-screen { display: flex; flex-direction: column; gap: 15px; }
         .lang-card {
             padding: 25px; border-radius: 25px; background: rgba(255,255,255,0.1);
@@ -41,14 +40,12 @@
         }
         .lang-card:hover { background: var(--ios-blue); transform: scale(1.02); }
 
-        /* ✈️ 진행 바 */
         .progress-container { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-bottom: 35px; }
-        .progress-bar { height: 100%; width: 0%; background: #00d2ff; border-radius: 10px; transition: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); position: relative; }
+        .progress-bar { height: 100%; width: 0%; background: #00d2ff; border-radius: 10px; transition: 0.8s; position: relative; }
         .progress-bar::after { content: '✈️'; position: absolute; right: -15px; top: -14px; font-size: 24px; }
 
         .question-box { font-size: 22px; font-weight: 800; min-height: 100px; margin-bottom: 30px; line-height: 1.5; }
 
-        /* 인터페이스 그룹 */
         .ui-group { display: none; flex-direction: column; gap: 12px; animation: slideUp 0.5s ease; }
         .active-ui { display: flex; }
 
@@ -57,7 +54,7 @@
             background: rgba(255,255,255,0.1); color: white; cursor: pointer;
             font-family: 'Jua'; font-size: 18px; transition: 0.2s; outline: none;
         }
-        .ios-btn:active { transform: scale(0.96); background: rgba(255,255,255,0.2); }
+        .ios-btn:active { transform: scale(0.96); }
         .btn-blue { background: var(--ios-blue); border: none; }
         .btn-green { background: var(--ios-green); border: none; }
 
@@ -67,15 +64,18 @@
             color: white; font-size: 20px; text-align: center; margin-bottom: 10px;
         }
 
-        /* 🤖 AI 채팅 */
         .ai-section { background: rgba(0,0,0,0.2); border-radius: 30px; border: 1px solid var(--glass-border); overflow: hidden; margin-top: 30px; }
         #chat-window { height: 120px; overflow-y: auto; padding: 15px; font-size: 14px; text-align: left; border-bottom: 1px solid var(--glass-border); }
         .chat-input-group { display: flex; padding: 10px; gap: 10px; }
         #user-input { flex: 1; background: transparent; border: none; color: white; outline: none; }
 
+        .notice-footer {
+            margin-top: 35px; padding-top: 20px; border-top: 1px solid var(--glass-border);
+            font-size: 11px; line-height: 1.6; opacity: 0.6; text-align: center;
+        }
+
         .screen { display: none; }
         .active-screen { display: block; }
-
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -114,6 +114,8 @@
                 <button onclick="askGemini()" style="background:var(--ios-blue); color:white; border:none; border-radius:50%; width:35px; height:35px; cursor:pointer;">↑</button>
             </div>
         </div>
+
+        <footer class="notice-footer"><span id="notice-text">주의사항 로딩 중...</span></footer>
     </div>
 
     <div id="result-screen" class="screen">
@@ -132,10 +134,10 @@
     let stepLog = 0;
 
     const translations = {
-        ko: { yes: "예", no: "아니오", consult: "행정사님과 문자 상담", resHeader: "🎉 진단 완료!", aiInit: "비자에 대해 무엇이든 물어보세요!", next: "다음" },
-        en: { yes: "Yes", no: "No", consult: "Consult via SMS", resHeader: "🎉 Finished!", aiInit: "Ask me anything about Visas!", next: "Next" },
-        zh: { yes: "是", no: "不", consult: "通过短信咨询", resHeader: "🎉 诊断完成！", aiInit: "咨询任何签证问题", next: "下一个" },
-        vi: { yes: "Có", no: "Không", consult: "Tư vấn qua SMS", resHeader: "🎉 Hoàn thành!", aiInit: "Hỏi tôi về visa!", next: "Kế tiếp" }
+        ko: { yes: "예", no: "아니오", consult: "행정사님과 문자 상담", resHeader: "🎉 진단 완료!", aiInit: "비자에 대해 무엇이든 물어보세요!", next: "다음", notice: "본 사이트는 현재 테스트 용으로 제작되었으며, 영리 사용 목적으로의 배포를 금합니다." },
+        en: { yes: "Yes", no: "No", consult: "Consult via SMS", resHeader: "🎉 Finished!", aiInit: "Ask me anything about Visas!", next: "Next", notice: "This site is for testing purposes only. Commercial distribution is strictly prohibited." },
+        zh: { yes: "是", no: "不", consult: "通过短信咨询", resHeader: "🎉 诊断完成！", aiInit: "咨询任何签证问题", next: "下一个", notice: "本网站仅供测试之用。严禁以盈利为目的进行发布。" },
+        vi: { yes: "Có", no: "Không", consult: "Tư vấn qua SMS", resHeader: "🎉 Hoàn thành!", aiInit: "Hỏi tôi về visa!", next: "Kế tiếp", notice: "Trang web này chỉ dành cho mục đích thử nghiệm. Nghiêm cấm phân phối vì mục đích lợi nhuận." }
     };
 
     const flows = {
@@ -155,13 +157,13 @@
             text: { ko: "어떤 분야의 직업을 희망하시나요?", en: "What field do you want to work in?", zh: "您希望从事什么领域的工作？", vi: "Bạn muốn làm việc trong lĩnh vực nào?" },
             type: "CHOICE",
             choices: [
-                { text: {ko: "전문직/IT (Professional)", en: "Professional/IT"}, next: "q_score_check" },
-                { text: {ko: "제조/농축어업 (Labor)", en: "Manufacturing/Labor"}, next: "res_e9" },
-                { text: {ko: "기업 투자 (Investment)", en: "Business Investment"}, next: "res_d89" }
+                { text: {ko: "전문직/IT", en: "Professional/IT", zh: "专业人士/IT", vi: "Chuyên gia/IT"}, next: "q_score_check" },
+                { text: {ko: "제조/노동", en: "Labor", zh: "制造/劳动", vi: "Sản xuất/Lao động"}, next: "res_e9" },
+                { text: {ko: "기업 투자", en: "Investment", zh: "企业投资", vi: "Đầu tư doanh nghiệp"}, next: "res_d89" }
             ]
         },
         q_score_check: {
-            text: { ko: "본인의 예상 연봉은 얼마인가요? (단위: 만원)", en: "Expected annual salary? (Unit: 10k KRW)", zh: "预计年薪是多少？(单位: 万韩元)", vi: "Lương dự kiến? (Đơn vị: vạn won)" },
+            text: { ko: "본인의 예상 연봉은 얼마인가요? (만원)", en: "Expected annual salary? (10k KRW)", zh: "预计年薪是多少？(万韩元)", vi: "Lương dự kiến? (vạn won)" },
             type: "INPUT", next: "res_f27_e7"
         },
         q_marry: {
@@ -174,27 +176,52 @@
         }
     };
 
+    // 💡 결과창 다국어 데이터베이스
     const results = {
-        res_f4: { name: {ko: "F-4 (재외동포)", en: "F-4 (Overseas Korean)"}, desc: {ko: "동포분들을 위한 최상의 비자입니다. 자유로운 정착이 가능합니다.", en: "The best visa for ethnic Koreans. Allows free settlement."} },
-        res_f5: { name: {ko: "F-5 (영주권)", en: "F-5 (Permanent Residency)"}, desc: {ko: "한국 영주권입니다. 높은 소득과 품행 요건 입증이 핵심입니다.", en: "Permanent status. High income and conduct proof required."} },
-        res_f27_e7: { name: {ko: "F-2-7 / E-7 (우수인재)", en: "F-2-7 / E-7 (Professional)"}, desc: {ko: "전문직을 위한 점수제/취업 비자입니다. 연봉 요건 확인이 필수입니다.", en: "Score-based/Work visa for pros. Annual salary check essential."} },
-        res_e9: { name: {ko: "E-9 (비전문취업)", en: "E-9 (Non-professional)"}, desc: {ko: "고용허가제 비자입니다. 센터를 통한 절차가 필요합니다.", en: "Employment permit system visa. Process via centers required."} },
-        res_d89: { name: {ko: "D-8 / D-9 (투자/무역)", en: "D-8 / D-9 (Investment)"}, desc: {ko: "사업 투자를 위한 비자입니다. 투자금 증빙이 가장 중요합니다.", en: "Visa for business investment. Capital proof is key."} },
-        res_f6: { name: {ko: "F-6 (결혼이민)", en: "F-6 (Marriage)"}, desc: {ko: "결혼 비자입니다. 혼인의 진정성과 소득 요건을 봅니다.", en: "Marriage visa. Checks genuine marriage and income."} },
-        res_d2: { name: {ko: "D-2 (유학)", en: "D-2 (Study)"}, desc: {ko: "학위 과정을 위한 비자입니다. 재정 능력 입증이 필요합니다.", en: "Visa for degree programs. Financial proof required."} },
-        res_etc: { name: {ko: "상세 상담 필요", en: "Need Consultation"}, desc: {ko: "특수한 경우입니다. 행정사님과 직접 상담을 권장합니다.", en: "Special case. Direct consultation highly recommended."} }
+        res_f4: {
+            name: { ko: "F-4 (재외동포)", en: "F-4 (Overseas Korean)", zh: "F-4 (在外同胞)", vi: "F-4 (Kiều bào)" },
+            desc: { ko: "동포분들을 위한 최상의 비자입니다. 자유로운 정착이 가능합니다.", en: "The best visa for ethnic Koreans. Allows free settlement.", zh: "专为同胞设计的自由签证。可以自由定居。", vi: "Visa tốt nhất cho kiều bào. Cho phép định cư tự do." }
+        },
+        res_f5: {
+            name: { ko: "F-5 (영주권)", en: "F-5 (Permanent Residency)", zh: "F-5 (永住权)", vi: "F-5 (Thường trú)" },
+            desc: { ko: "한국 영주권입니다. 높은 소득과 품행 요건 입증이 핵심입니다.", en: "Permanent status. High income and conduct proof required.", zh: "韩国永住权。证明高收入和品行记录是核心。", vi: "Quyền thường trú tại Hàn Quốc. Việc chứng minh thu nhập cao và hạnh kiểm là then chốt." }
+        },
+        res_f27_e7: {
+            name: { ko: "F-2-7 / E-7 (우수인재)", en: "F-2-7 / E-7 (Professional)", zh: "F-2-7 / E-7 (优秀人才)", vi: "F-2-7 / E-7 (Nhân tài ưu tú)" },
+            desc: { ko: "전문직을 위한 점수제/취업 비자입니다. 연봉 요건 확인이 필수입니다.", en: "Score-based/Work visa for pros. Annual salary check essential.", zh: "专业人士的评分制/就业签证。必须确认年薪要求。", vi: "Visa tính điểm/làm việc dành cho chuyên gia. Việc kiểm tra yêu cầu về lương năm là bắt buộc." }
+        },
+        res_e9: {
+            name: { ko: "E-9 (비전문취업)", en: "E-9 (Non-professional)", zh: "E-9 (非专业就业)", vi: "E-9 (Lao động phi chuyên môn)" },
+            desc: { ko: "고용허가제 비자입니다. 센터를 통한 절차가 필요합니다.", en: "Employment permit system visa. Process via centers required.", zh: "雇佣许可制签证。需要通过相关中心办理手续。", vi: "Visa theo hệ thống cấp phép việc làm. Cần thực hiện các thủ tục thông qua trung tâm." }
+        },
+        res_d89: {
+            name: { ko: "D-8 / D-9 (투자/무역)", en: "D-8 / D-9 (Investment)", zh: "D-8 / D-9 (投资/贸易)", vi: "D-8 / D-9 (Đầu tư/Thương mại)" },
+            desc: { ko: "사업 투자를 위한 비자입니다. 투자금 증빙이 가장 중요합니다.", en: "Visa for business investment. Capital proof is key.", zh: "用于商业投资的签证。投资资金证明最为重要。", vi: "Visa cho đầu tư kinh doanh. Chứng minh vốn đầu tư là quan trọng nhất." }
+        },
+        res_f6: {
+            name: { ko: "F-6 (결혼이민)", en: "F-6 (Marriage)", zh: "F-6 (结婚移民)", vi: "F-6 (Kết hôn di trú)" },
+            desc: { ko: "결혼 비자입니다. 혼인의 진정성과 소득 요건을 봅니다.", en: "Marriage visa. Checks genuine marriage and income.", zh: "结婚签证。审查婚姻真实性和收入要求。", vi: "Visa kết hôn. Kiểm tra tính chân thực của hôn nhân và yêu cầu thu nhập." }
+        },
+        res_d2: {
+            name: { ko: "D-2 (유학)", en: "D-2 (Study)", zh: "D-2 (留学)", vi: "D-2 (Du học)" },
+            desc: { ko: "학위 과정을 위한 비자입니다. 재정 능력 입증이 필요합니다.", en: "Visa for degree programs. Financial proof required.", zh: "攻读学位的签证。需要证明财务能力。", vi: "Visa cho các chương trình cấp bằng. Cần chứng minh khả năng tài chính." }
+        },
+        res_etc: {
+            name: { ko: "상세 상담 필요", en: "Need Consultation", zh: "需要详细咨询", vi: "Cần tư vấn chi tiết" },
+            desc: { ko: "특수한 경우입니다. 행정사님과 직접 상담을 권장합니다.", en: "Special case. Direct consultation highly recommended.", zh: "特殊情况。建议直接向行政书士咨询。", vi: "Trường hợp đặc biệt. Khuyến khích tư vấn trực tiếp với người đại diện." }
+        }
     };
 
     function initQuest(lang) {
         userLang = lang;
-        document.getElementById('lang-screen').style.display = 'none'; // 인트로 화면 숨김
-        document.getElementById('quiz-screen').classList.add('active-screen'); // 퀘스트 화면 활성화
-        
+        document.getElementById('lang-screen').style.display = 'none';
+        document.getElementById('quiz-screen').classList.add('active-screen');
         const t = translations[lang];
         document.querySelectorAll('.yes-txt').forEach(el => el.innerText = t.yes);
         document.querySelectorAll('.no-txt').forEach(el => el.innerText = t.no);
         document.getElementById('ai-init-msg').innerText = t.aiInit;
-        document.getElementById('next-btn').innerText = t.next; // Next 버튼 번역 적용
+        document.getElementById('next-btn').innerText = t.next;
+        document.getElementById('notice-text').innerText = t.notice;
         renderStep();
     }
 
@@ -202,36 +229,23 @@
         const step = flows[currentStep];
         document.getElementById('question-text').innerText = step.text[userLang];
         document.getElementById('progress-bar').style.width = (stepLog * 15) + "%";
-
         document.querySelectorAll('.ui-group').forEach(u => u.classList.remove('active-ui'));
-        
-        if(step.type === "OX") {
-            document.getElementById('ui-ox').classList.add('active-ui');
-        } else if(step.type === "CHOICE") {
-            const container = document.getElementById('ui-choice');
-            container.innerHTML = "";
+        if(step.type === "OX") document.getElementById('ui-ox').classList.add('active-ui');
+        else if(step.type === "CHOICE") {
+            const container = document.getElementById('ui-choice'); container.innerHTML = "";
             step.choices.forEach(c => {
-                const b = document.createElement('button');
-                b.className = "ios-btn";
-                b.innerText = c.text[userLang] || c.text.ko;
-                b.onclick = () => { currentStep = c.next; stepLog++; renderStep(); };
+                const b = document.createElement('button'); b.className = "ios-btn";
+                b.innerText = c.text[userLang]; b.onclick = () => { currentStep = c.next; stepLog++; renderStep(); };
                 container.appendChild(b);
             });
             container.classList.add('active-ui');
-        } else if(step.type === "INPUT") {
-            document.getElementById('ui-input').classList.add('active-ui');
-        }
+        } else if(step.type === "INPUT") document.getElementById('ui-input').classList.add('active-ui');
     }
 
     function handleInput(val) {
-        const step = flows[currentStep];
-        stepLog++;
-        if(step.type === "OX") {
-            currentStep = (val === 'O') ? step.nextO : step.nextX;
-        } else {
-            currentStep = step.next;
-        }
-
+        const step = flows[currentStep]; stepLog++;
+        if(step.type === "OX") currentStep = (val === 'O') ? step.nextO : step.nextX;
+        else currentStep = step.next;
         if(currentStep.startsWith("res_")) showFinalResult(currentStep);
         else renderStep();
     }
@@ -239,14 +253,12 @@
     function showFinalResult(resKey) {
         document.getElementById('quiz-screen').classList.remove('active-screen');
         document.getElementById('result-screen').classList.add('active-screen');
-        
         const res = results[resKey];
         const t = translations[userLang];
         document.getElementById('res-header').innerText = t.resHeader;
-        document.getElementById('visa-badge').innerText = res.name[userLang] || res.name.ko;
-        document.getElementById('visa-desc').innerText = res.desc[userLang] || res.desc.ko;
+        document.getElementById('visa-badge').innerText = res.name[userLang];
+        document.getElementById('visa-desc').innerText = res.desc[userLang];
         document.getElementById('consult-txt').innerText = t.consult;
-
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
     }
 
